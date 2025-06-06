@@ -9,7 +9,7 @@ export const authMiddleware = (req, res, next) => {
     return tryRefreshToken(req, res);
   }
 
-  if (!accessToken) return res.status(401).send('Unauthorized');
+  // if (!accessToken) return res.status(401).send('Unauthorized');
 
   const userData = jwt.validateAccessToken(accessToken);
 

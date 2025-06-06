@@ -18,7 +18,7 @@ const save = async (userId, newToken) => {
 };
 
 const getByToken = (refreshToken) => {
-  return Token.findOne({ where: refreshToken });
+  return Token.findOne({ where: { refreshToken } });
 };
 
 const remove = (userId) => {

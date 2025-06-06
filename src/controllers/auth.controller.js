@@ -1,4 +1,5 @@
 import bcrypt from 'bcrypt';
+import crypto from 'crypto';
 import { authService } from '../services/auth.service.js';
 import { validateEmail, validatePassword } from '../utils/validation.js';
 import { mailer } from '../utils/mailer.js';
@@ -17,11 +18,6 @@ const register = async (req, res) => {
   };
 
   if (Object.values(errors).some((error) => error)) {
-    // return res.status(400).json({
-    //   errors,
-    //   message: 'Validation error',
-    // });
-
     throw ApiError.badRequest('Validation error', errors);
   }
 
@@ -33,7 +29,7 @@ const register = async (req, res) => {
     });
   }
 
-  const activationToken = bcrypt.genSaltSync(1);
+  const activationToken = crypto.randomBytes(16).toString('hex');
   const hashedPassword = await bcrypt.hash(password, saltRounds);
   const newUser = await authService.createUser(
     name,
@@ -55,22 +51,12 @@ const activate = async (req, res) => {
   const user = await authService.getByEmail(email);
 
   if (!user) {
-    // return res.status(400).json({
-    //   errors: { user: 'Invalid user' },
-    //   message: 'Activation error',
-    // });
-
     throw ApiError.badRequest('Activation error', {
       user: 'Invalid user',
     });
   }
 
   if (user.activationToken !== token) {
-    // return res.status(400).json({
-    //   errors: { token: 'Token is incorrect' },
-    //   message: 'Activation error',
-    // });
-
     throw ApiError.badRequest('Activation error', {
       token: 'Token is incorrect',
     });
@@ -95,17 +81,12 @@ const login = async (req, res) => {
   }
 
   if (!user) {
-    // return res.status(400).json({
-    //   errors: { email: 'Email is invalid' },
-    //   message: 'Validation error',
-    // });
-
     throw ApiError.badRequest('Validation error', {
       email: 'Email is invalid',
     });
   }
 
-  const correctPassword = bcrypt.compare(password, user.password);
+  const correctPassword = await bcrypt.compare(password, user.password);
 
   if (!correctPassword) {
     // return res.status(400).json({
